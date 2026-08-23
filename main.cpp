@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 
 #include <windows.h>
 #include <shellapi.h>
@@ -36,28 +37,47 @@ std::string get_clipboard_text(){
     return copiedText;
 }
 
-int main(){
-    // std::string target{};
+bool get_answer(){
+    std::string answer{};
 
-    // std::cout << "enter steam url target: ";
-    // std::cin >> target;
+    while(answer[0] != 'y' && answer[1] != 'n'){
+        std::cout << "\ny/n: ";
+        std::cin >> answer;
+        std::cout << '\n';
+    }
+    
+    return answer[0] == 'y';
+}
+
+std::string get_line(const std::string &copiedText){
+    std::string text{};
+
+    std::cout << (!copiedText.empty()
+                    ? "you have text on your clipboard: \"" + copiedText + "\""
+                    : "your clipboard is empty."
+                 )
+              << "\n\n";
+
+    while(text.empty()){
+        std::cout << "enter steam url target, or leave empty to use clipboard copy.\n => ";
+        std::getline(std::cin, text);
+        std::cout << '\n';
+
+        if(text.empty()){
+            text = get_clipboard_text();
+            break;
+        }
+    }
+
+    return text;
+}
+
+int main(){
+    std::string target{get_line(get_clipboard_text())};
+
+    std::cout << "directing to \"" + (STEAM_PREFIX + target) + "\" ...";
 
     //ShellExecuteA(nullptr, "open", (STEAM_PREFIX + target).c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-
-    // auto result = ShellExecuteA(
-    //     nullptr,
-    //     "open",
-    //     "powershell",
-    //     "-command \"Get-Clipboard\"",
-    //     nullptr,
-    //     SW_SHOWNORMAL
-    // );
-
-    // std::cout << (INT_PTR)result;
-
-    std::string copiedText{get_clipboard_text()};
-
-    std::cout << copiedText;
 
     return 0;
 }
