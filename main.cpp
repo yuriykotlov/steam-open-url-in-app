@@ -91,7 +91,7 @@ int main(){
     char option{};
     
     while(std::tolower(option) != 'q'){
-        std::cout << "\033[H\033[2J" << std::flush;
+        std::cout << "\033[H\033[2J\033[3J";
 
         std::string target{STEAM_PREFIX + get_line(get_clipboard_text())};
 
