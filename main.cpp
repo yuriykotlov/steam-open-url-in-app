@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include <shellapi.h>
+#include <conio.h>
 
 #define STEAM_PREFIX "steam://openurl/"
 
@@ -37,47 +38,45 @@ std::string get_clipboard_text(){
     return copiedText;
 }
 
-bool get_answer(){
-    std::string answer{};
-
-    while(answer[0] != 'y' && answer[1] != 'n'){
-        std::cout << "\ny/n: ";
-        std::cin >> answer;
-        std::cout << '\n';
-    }
-    
-    return answer[0] == 'y';
-}
-
 std::string get_line(const std::string &copiedText){
     std::string text{};
 
-    std::cout << (!copiedText.empty()
-                    ? "you have text on your clipboard: \"" + copiedText + "\""
-                    : "your clipboard is empty."
-                 )
-              << "\n\n";
-
-    while(text.empty()){
-        std::cout << "enter steam url target, or leave empty to use clipboard copy.\n => ";
-        std::getline(std::cin, text);
-        std::cout << '\n';
-
-        if(text.empty()){
-            text = get_clipboard_text();
-            break;
-        }
+    if(!copiedText.empty()){
+        std::cout << "you have text on your clipboard: \"" + copiedText + "\"\n\n"
+                  << "enter steam url target, or leave empty to use clipboard copy.\n => ";
+    } else{
+        std::cout << "your clipboard is empty.\n\n"
+                  << "enter steam url target\n => ";
     }
 
+    std::getline(std::cin, text);
+    std::cout << '\n';
+
+    if (text.empty()){
+        text = copiedText;
+    }
     return text;
 }
 
+void run_command(const std::string &target){
+    HINSTANCE result = ShellExecuteA(nullptr, "open", target.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+
+    // mostly likely will never throw error since STEAM_PREFIX is valid
+    if(reinterpret_cast<INT_PTR>(result) <= 32){
+        std::cout << "\nERROR: redirect failed.\n";
+    }
+
+    std::cout << "\nif steam doesn't open anything, your url was invalid or steam was closed.\n";
+    std::cout << "[ press any button to close ]";
+    _getch();
+}
+
 int main(){
-    std::string target{get_line(get_clipboard_text())};
+    std::string target{STEAM_PREFIX + get_line(get_clipboard_text())};
 
-    std::cout << "directing to \"" + (STEAM_PREFIX + target) + "\" ...";
+    std::cout << "directing to \"" + target + "\" ...\n";
 
-    //ShellExecuteA(nullptr, "open", (STEAM_PREFIX + target).c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+    run_command(target);
 
     return 0;
 }
